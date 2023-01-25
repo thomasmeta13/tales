@@ -2,12 +2,12 @@
 const express = require('express');
 const cors = require('cors');
 const WebSocket = require('ws');
-
+const axios = require('axios');
 
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-    organization: "org-NFL1R7jJVWb9B6QgEreehepg",
-    apiKey: "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",
+    organization: "org-sLGchPXx5ihHp43dFLsS35w7",
+    apiKey: "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",
 });
 const openai = new OpenAIApi(configuration);
 //const response = await openai.listEngines();
@@ -29,23 +29,45 @@ app.use((req, res, next) => {
 // Define the routes for the server
 app.post('/api/generate-short-film', async (req, res) => {
   // Get the title, genre, and description from the request body
-  const { title, genre, description } = req.body;
+  const { title, genre, description, parameters } = req.body;
 
   // Use the openai.generate method to generate text using the OpenAI API
-  const response = await openai.createCompletion({
-    model: "text-davinci-003",
-    prompt: `${title}: ${genre}: ${description}`,
-    max_tokens: 7,
-    temperature: 0,
-  }, (error, response) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      // Send the generated script back in the response
-      res.json({ script: response.text });
-    }
-  });
+  try {
+    // Send request to get it
+    var response = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: `${title}: ${genre}: ${description}: ${parameters}`,
+      max_tokens: 250,
+      temperature: 0.4,
+    });
+    let script = response.data.choices[0].text;
+    let part1 = script.split(".")[0];
+    //Send request to get image
+    var image_response = await axios({
+        method: 'post',
+        url: 'https://api.replicate.com/v1/predictions',
+        headers: {
+            'Authorization': 'Token b1f2603fcb68b9a4e5195732c2092d37e77bb9ab',
+            'Content-Type': 'application/json'
+        },
+        data: {
+            version: 'f178fa7a1ae43a9a9af01b833b9d2ecf97b1bcb0acfd2dc5dd04895e042863f1',
+            input: {
+                prompt: part1
+            }
+        }
+    });
+    const image1 = image_response.data;
+    console.log(image_response.data);
+    res.json({ script: script, image1: image1 });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
 });
+
+
+
 
 const wss = new WebSocket.Server({ port: 3080 });
 
@@ -57,6 +79,11 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     console.log(`Received message: ${message}`);
   });
+});
+
+const port = process.env.PORT || 3001;
+app.listen(port, () => {
+  console.log(`Listening on http://localhost:${port}`);
 });
 
 /*app.post('/api/generate-short-film', (req, res) => {
