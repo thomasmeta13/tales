@@ -51,6 +51,39 @@ body {
     height: 120px;
   }
   
+  @media (max-width: 600px) {
+    .container {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .title {
+      font-size: 24px;
+    }
+    .description {
+      font-size: 14px;
+    }
+    .label {
+      font-size: 12px;
+    }
+    .input, .select, .textarea {
+      font-size: 14px;
+    }
+  }  
+  
+  @media (max-width: 600px) {
+    /* styles to apply when screen width is less than 600px */
+    .container {
+        width: 90%;
+    }
+    .input, .select, .textarea {
+        width: 100%;
+    }
+    /* add more styles as necessary */
+}
+
+
   .button {
     width: 300px;
     height: 36px;

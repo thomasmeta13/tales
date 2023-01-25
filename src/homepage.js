@@ -16,53 +16,59 @@ const HomePage = () => {
     const [part3, setPart3] = useState('');
     const [part4, setPart4] = useState('');
     const [image1, setImage1] = useState('');
-
-        // useEffect hook to only call the API when the form is submitted
-
-    const handleSubmit = async (event) => {
-      event.preventDefault();
-      setIsLoading(true);
-      setImage1('loading.gif');
-      try {
-        const response = await axios.post('http://localhost:3001/api/generate-short-film', {
-          title: title,
-          genre: genre,
-          description: description,
-          parameters: parameters,
-        });
-        setIsLoading(false);
-        setGeneratedScript(response.data.script);
-        const sentences = response.data.script.split(". ");
-        if (sentences.length < 4) {
-          setErrorMessage("Script has less than 4 sentences")
-        } else {
-          setPart1(sentences[0]);
-          setPart2(sentences[1]);
-          setPart3(sentences[2]);
-          setPart4(sentences[3]);
-          const part1 = sentences[0];
-          const imageResponse = await axios({
-            method: 'post',
-            url: 'https://api.replicate.com/v1/predictions',
-            headers: {
-              'Authorization': 'Token b1f2603fcb68b9a4e5195732c2092d37e77bb9ab',
-              'Content-Type': 'application/json'
-            },
-            data: {
-              version: 'f178fa7a1ae43a9a9af01b833b9d2ecf97b1bcb0acfd2dc5dd04895e042863f1',
-              input: {
-                prompt: part1
-              }
-            }
-          });
-          setImage1(imageResponse.data.output.url);
-        }
-      } catch (error) {
-        setIsLoading(false);
-        setErrorMessage(error.error);
-      }
-    };    
+    const [imageLoading, setImageLoading] = useState(false);
+    const generateScriptUrl = 'http://localhost:3001/api/generate-short-film';
+    const generateImageUrl = 'https://api.replicate.com/v1/predictions';
+    const apiKey = 'b1f2603fcb68b9a4e5195732c2092d37e77bb9ab';
+    const version = 'f178fa7a1ae43a9a9af01b833b9d2ecf97b1bcb0acfd2dc5dd04895e042863f1';
     
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setIsLoading(true);
+        setImage1('loading.gif');
+        try {
+            // make request to generate script
+            const scriptResponse = await axios.post(generateScriptUrl, {
+                title: title,
+                genre: genre,
+                description: description,
+                parameters: parameters,
+            });
+            setGeneratedScript(scriptResponse.data.script);
+    
+            // split script into sentences
+            const sentences = scriptResponse.data.script.split(". ");
+            if (sentences.length < 4) {
+                setErrorMessage("Script has less than 4 sentences")
+            } else {
+                setPart1(sentences[0]);
+                setPart2(sentences[1]);
+                setPart3(sentences[2]);
+                setPart4(sentences[3]);
+    
+                // make request to generate image
+                const imageResponse = await axios({
+                    method: 'post',
+                    url: generateImageUrl,
+                    headers: {
+                        'Authorization': `Token ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    data: {
+                        version: version,
+                        input: {
+                            prompt: sentences[0]
+                        }
+                    }
+                });
+                setImage1(imageResponse.data.output.url);
+            }
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            setErrorMessage(error.error);
+        }
+    };
     
 
   return (
@@ -122,6 +128,7 @@ const HomePage = () => {
             name="parameters" 
             value={parameters} 
             onChange={(event) => setParameters(event.target.value)}>
+                , not exceeding 200 characters, without starting a new line.
             </p>
             <br />
             {isLoading ? (

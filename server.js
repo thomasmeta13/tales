@@ -4,10 +4,11 @@ const cors = require('cors');
 const WebSocket = require('ws');
 const axios = require('axios');
 
+
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-    organization: "org-sLGchPXx5ihHp43dFLsS35w7",
-    apiKey: "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",
+    organization: "org-tYcyOBrEV4ugEJyIp3sGT3aQ",
+    apiKey: "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",
 });
 const openai = new OpenAIApi(configuration);
 //const response = await openai.listEngines();
@@ -58,7 +59,6 @@ app.post('/api/generate-short-film', async (req, res) => {
         }
     });
     const image1 = image_response.data;
-    console.log(image_response.data);
     res.json({ script: script, image1: image1 });
   } catch (error) {
     console.log(error);

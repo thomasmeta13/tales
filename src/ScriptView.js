@@ -13,7 +13,7 @@ const ScriptView = ({ generatedScript, part1, part2, part3, part4, image1 }) => 
         <p>{part4}</p>    
       </div>
       <h1 className="title">Generated Images</h1>
-      <img src={image1} alt="image1" />
+      <img src={image1} alt="part1" />
     </div>
   );
 };
